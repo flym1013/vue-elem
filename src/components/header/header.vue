@@ -7,7 +7,7 @@
             <polyline points="12,18 4,9 12,0" style="fill:none;stroke:rgb(255,255,255);stroke-width:2"/>
         </svg>
     </section>
-    <router-link :to="userInfo? '/profile':'/login'" v-if='signinUp' class="head_login">
+    <router-link :to="userInfo? '/myInformation':'/loginPage'" v-if='signinUp' class="head_login">
         <svg class="user_avatar" v-if="userInfo">
             <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#user"></use>
         </svg>
@@ -24,12 +24,25 @@
 </template>
 
 <script>
+import {mapState, mapActions} from 'vuex'
 export default {
   data () {
-    return {
-    }
+    return {}
   },
-  props: ['signinUp', 'headTitle', 'goBack']
+  props: ['signinUp', 'headTitle', 'goBack'],
+  created () {
+    this.getUserInfo()
+  },
+  computed: {
+    ...mapState([
+      'userInfo'
+    ])
+  },
+  methods: {
+    ...mapActions([
+      'getUserInfo'
+    ])
+  }
 }
 </script>
 
@@ -44,13 +57,13 @@ export default {
   top: 0;
   @include wh(100%, 1.95rem);
 }
-.header_goback{
+.head_goback{
   left: 0.4rem;
   @include wh(0.6rem, 1rem);
   line-height: 2.2rem;
   margin-left: .4rem;
 }
-.header_login{
+.head_login{
   right: 0.55rem;
   @include sc(0.65rem, #fff);
   @include ct;

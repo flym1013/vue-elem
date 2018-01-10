@@ -25,9 +25,8 @@ export function cityGuess (opt) {
  */
 export function msiteAdress (opt) {
   return fetch({
-    url: '/v2/pois',
-    method: 'get',
-    params: opt
+    url: '/v2/pois/' + opt,
+    method: 'get'
   })
 }
 
@@ -45,6 +44,163 @@ export function msiteAdress (opt) {
 export function shopList (opt) {
   return fetch({
     url: '/shopping/restaurants',
+    method: 'get',
+    params: opt
+  })
+}
+
+// 获取红包
+/**
+*@param {String} user_id  用户id 必选
+*@param {String} limit 获取数据数量
+*@param {String} offset 跳过数据条数
+*/
+export function getRedEnvelope (opt) {
+  return fetch({
+    url: '/promotion/v2/users/' + opt.user_id + '/hongbaos',
+    method: 'get',
+    params: {'limit': opt.limit, 'offset': opt.offset}
+  })
+}
+
+// 获取历史红包
+/**
+*@param {String} user_id  用户id 必选
+*@param {String} limit 获取数据数量
+*@param {String} offset 跳过数据条数
+*/
+export function getOverduRedEnvelope (opt) {
+  return fetch({
+    url: '/promotion/v2/users/' + opt.user_id + '/expired_hongbaos',
+    method: 'get',
+    params: {'limit': opt.limit, 'offset': opt.offset}
+  })
+}
+
+// 兑换红包
+/**
+*@param {String} user_id  用户id 必选
+*@param {String} limit 获取数据数量
+*@param {String} offset 跳过数据条数
+*/
+export function exchangeRedEnvelope (opt) {
+  return fetch({
+    url: '/v1/users/' + opt.user_id + '/hongbao/exchange',
+    method: 'post',
+    data: {'limit': opt.limit, 'offset': opt.offset}
+  })
+}
+
+// 获取验证码
+/**
+*/
+export function getCode (opt) {
+  return fetch({
+    url: '/v1/captchas',
+    method: 'post',
+    data: opt
+  })
+}
+
+// 登录
+/**
+*@param username  用户名 Y
+*@param password    密码 Y
+*@param captcha_code   验证码 Y
+*/
+export function login (opt) {
+  return fetch({
+    url: '/v2/login',
+    method: 'post',
+    data: opt
+  })
+}
+
+// 获取用户信息
+export function getInfo (opt) {
+  return fetch({
+    url: '/v1/user',
+    method: 'get',
+    params: opt
+  })
+}
+
+// 获取城市
+/**
+*@param guess  定位城市
+*@param hot    热门城市
+*@param group   所有城市
+*/
+export function getCity (opt) {
+  return fetch({
+    url: '/v1/cities',
+    method: 'get',
+    params: opt
+  })
+}
+
+// 获取当前城市，搜索城市中的不同位置
+/**
+*@param guess  定位城市
+*@param hot    热门城市
+*@param group   所有城市
+*/
+export function getCurrentCity (opt) {
+  return fetch({
+    url: '/v1/cities' + '/' + opt,
+    method: 'get',
+    params: opt
+  })
+}
+
+// 搜索地址
+/**
+*@param city_id 城市id Y
+*@param keyword 搜索关键词 Y
+*@param type 类型
+*/
+export function searchAddrress (opt) {
+  return fetch({
+    url: 'v1/pois',
+    method: 'get',
+    params: opt
+  })
+}
+
+// 获取所有商铺分类列表
+/**
+*@param latitude  纬度
+*@param longitude  经度
+*/
+export function getAllClassification (opt) {
+  return fetch({
+    url: 'shopping/v2/restaurant/category',
+    method: 'get',
+    params: opt
+  })
+}
+
+// 获取配送方式
+/**
+*@param latitude  纬度
+*@param longitude  经度
+*/
+export function getDeliveryMethods (opt) {
+  return fetch({
+    url: 'shopping/v1/restaurants/delivery_modes',
+    method: 'get',
+    params: opt
+  })
+}
+
+// 商家属性活动列表
+/**
+*@param latitude  纬度
+*@param longitude  经度
+*/
+export function getActiveMethods (opt) {
+  return fetch({
+    url: 'shopping/v1/restaurants/activity_attributes',
     method: 'get',
     params: opt
   })

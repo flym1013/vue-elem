@@ -63,6 +63,8 @@ $fc:#fff;
 }
 
 //flex 布局和 子元素 对其方式
+//space-between:第一个元素的边界与行的主起始位置的边界对齐，
+//同时最后一个元素的边界与行的主结束位置的边距对齐，而剩余的伸缩盒项目则平均分布，并确保两两之间的空白空间相等
 @mixin fj($type: space-between){
 	display: flex;
 	justify-content: $type;

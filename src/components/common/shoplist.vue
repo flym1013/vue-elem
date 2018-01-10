@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="shoplist_container">
-		<ul v-load-more="loaderMore" v-if="shopListArr.length" type="1">
+		<ul  v-if="shopListArr.length" type="1">
 			<router-link :to="{path: 'shop', query:{geohash, id: item.id}}" v-for="item in shopListArr" tag='li' :key="item.id" class="shop_li">
 				<section>
 					<img :src="imgBaseUrl + item.image_path" class="shop_img">
@@ -74,15 +74,17 @@ export default {
       imgBaseUrl: 'http://cangdu.org:8001/img/'
     }
   },
+  props: ['restaurantCategoryId', 'restaurantCategoryIds', 'sortByType', 'deliveryMode', 'supportIds', 'confirmSelect', 'geohash'],
   computed: {
     ...mapState([
       'latitude', 'longitude'
     ])
   },
   mounted () {
+  },
+  created () {
     this.initData()
   },
-  created () {},
   methods: {
     async initData () {
       let res = await shopList({
@@ -91,7 +93,38 @@ export default {
       })
       this.shopListArr = res.data
     },
-    zhunshi () {}
+    zhunshi () {},
+    // 监听父级传来的数据发生变化时，触发此函数重新根据属性值获取数据
+    async listenPropChange () {
+      // this.offset = 0
+      let res = await shopList({
+        latitude: this.latitude,
+        longitude: this.longitude,
+        // offset: this.offset,
+        // limit: this.limit,
+        restaurant_category_ids: this.restaurantCategoryIds,
+        restaurant_category_id: this.restaurantCategoryId,
+        order_by: this.sortByType,
+        delivery_mode: this.deliveryMode,
+        support_ids: this.supportIds
+      })
+      this.shopListArr = res.data
+    }
+  },
+  watch: {
+    // 监听父级传来的restaurantCategoryIds，当值发生变化的时候重新获取餐馆数据，作用于排序和筛选
+    restaurantCategoryIds: function (value) {
+      this.listenPropChange()
+    },
+    // 监听父级传来的排序方式
+    sortByType: function (value) {
+      this.listenPropChange()
+    },
+    // 监听父级的确认按钮是否被点击，并且返回一个自定义事件通知父级，已经接收到数据，此时父级才可以清除已选状态
+    confirmSelect: function (value) {
+      this.listenPropChange()
+      this.$emit('DidConfrim')
+    }
   }
 }
 </script>
