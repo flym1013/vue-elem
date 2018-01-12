@@ -205,3 +205,74 @@ export function getActiveMethods (opt) {
     params: opt
   })
 }
+
+// 餐馆详情
+/**
+*@param latitude  纬度
+*@param longitude  经度
+*@param shopid 餐馆id
+*/
+export function getCanteenDetail (opt) {
+  return fetch({
+    url: 'shopping/restaurant' + '/' + opt.shopid,
+    method: 'get',
+    params: {latitude: opt.latitude, longitude: opt.longitude + '&extras[]=activities&extras[]=album&extras[]=license&extras[]=identification&extras[]=statistics'}
+  })
+}
+
+// 获取餐馆食品列表
+/**
+*@param restaurant_id  餐馆ID
+*/
+export function getCanteenFoodList (opt) {
+  return fetch({
+    url: 'shopping/v2/menu',
+    method: 'get',
+    params: opt
+  })
+}
+
+// 获取评价信息
+/**
+*@param restaurant_id  餐馆ID
+*@param tag_name  评价类型，默认全部
+*@param offset   跳过数据条数
+*@param limit     单次获取数据条数
+*/
+export function getCanteenComment (opt) {
+  return fetch({
+    url: 'ugc/v2/restaurants/' + opt.restaurant_id + '/ratings',
+    method: 'get',
+    params: {has_content: true, tag_name: opt.tag_name, offset: opt.offset, limit: opt.limit}
+  })
+}
+
+// 获取评价分数
+/**
+*@param restaurant_id  餐馆ID
+*@param tag_name  评价类型，默认全部
+*@param offset   跳过数据条数
+*@param limit     单次获取数据条数
+*/
+export function getCanteenCommentScores (opt) {
+  return fetch({
+    url: 'ugc/v2/restaurants/' + opt.restaurant_id + '/ratings/scores',
+    method: 'get',
+    params: {has_content: true, tag_name: opt.tag_name, offset: opt.offset, limit: opt.limit}
+  })
+}
+
+// 获取评价分类
+/**
+*@param restaurant_id  餐馆ID
+*@param tag_name  评价类型，默认全部
+*@param offset   跳过数据条数
+*@param limit     单次获取数据条数
+*/
+export function getCanteenCommentTag (opt) {
+  return fetch({
+    url: 'ugc/v2/restaurants/' + opt.restaurant_id + '/ratings/tags',
+    method: 'get',
+    params: {has_content: true, tag_name: opt.tag_name, offset: opt.offset, limit: opt.limit}
+  })
+}

@@ -1,7 +1,7 @@
 <template lang="html">
   <div class="shoplist_container">
 		<ul  v-if="shopListArr.length" type="1">
-			<router-link :to="{path: 'shop', query:{geohash, id: item.id}}" v-for="item in shopListArr" tag='li' :key="item.id" class="shop_li">
+			<router-link :to="{path: 'shopDetail', query:{geohash, id: item.id}}" v-for="item in shopListArr" tag='li' :key="item.id" class="shop_li">
 				<section>
 					<img :src="imgBaseUrl + item.image_path" class="shop_img">
 				</section>
@@ -93,9 +93,27 @@ export default {
       })
       this.shopListArr = res.data
     },
-    zhunshi () {},
+    zhunshi (supports) {
+      let zhunStatus
+      if ((supports instanceof Array) && supports.length) {
+        supports.forEach(item => {
+          if (item.icon_name === '准') {
+            zhunStatus = true
+          }
+        })
+      } else {
+        zhunStatus = false
+      }
+      return zhunStatus
+    },
     // 监听父级传来的数据发生变化时，触发此函数重新根据属性值获取数据
     async listenPropChange () {
+      let supportStr = ''
+      this.supportIds.forEach(item => {
+        if (item.status) {
+          supportStr += '&support_ids[]=' + item.id
+        }
+      })
       // this.offset = 0
       let res = await shopList({
         latitude: this.latitude,
@@ -106,7 +124,7 @@ export default {
         restaurant_category_id: this.restaurantCategoryId,
         order_by: this.sortByType,
         delivery_mode: this.deliveryMode,
-        support_ids: this.supportIds
+        support_ids: supportStr
       })
       this.shopListArr = res.data
     }

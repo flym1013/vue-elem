@@ -5,6 +5,7 @@ import Router from 'vue-router'
 
 const home = () => import('../page/home/home.vue')
 const foodCategory = () => import('../page/home/foodCategory.vue')
+const shopDetail = () => import('../page/home/shopDetail.vue')
 
 const loginPage = () => import('../page/login/loginPage.vue')
 const forgetPage = () => import('../page/login/forget.vue')
@@ -43,6 +44,8 @@ export default new Router({
     { path: '/city/:cityid', component: city },
     // 首页-选择分类
     { path: '/foodCategory', component: foodCategory },
+    // 首页-选择分类-详情
+    { path: '/shopDetail', component: shopDetail },
     // 搜索search
     { path: '/search', component: search },
     // 订单order
