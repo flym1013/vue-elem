@@ -31,13 +31,16 @@
     <p class="login_tips">
         注册过的用户可凭账号密码登录
     </p>
-    <div class="login-btn">登录</div>
+    <div class="login-btn" @click="Login">登录</div>
     <router-link to="/forgetPage" class="forget-password">重置密码？</router-link>
+    <alert-tip v-if="showAlert" :showHide="showAlert" @closeTip="closeTip" :alertText="alertText"></alert-tip>
   </div>
 </template>
 
 <script>
 import headerTop from '../../components/header/header.vue'
+import alertTip from '../../components/common/alertTip.vue'
+import {mapMutations} from 'vuex'
 import {
   getCode,
   login
@@ -49,17 +52,23 @@ export default {
       userAccount: null,
       passWord: null,
       codeNumber: null,
+      userInfo: [],
       captchaCodeImg: null,
-      showPassword: false
+      showPassword: false,
+      showAlert: false, // 显示提示组件
+      alertText: null  // 组件提示内容
     }
   },
   created () {
     this.getCaptchaCode()
   },
   components: {
-    headerTop
+    headerTop, alertTip
   },
   methods: {
+    ...mapMutations([
+      'RECORD_USERINFO'
+    ]),
     changePassWordType () {
       this.showPassword = !this.showPassword
     },
@@ -67,9 +76,36 @@ export default {
       let res = await getCode()
       this.captchaCodeImg = res.data.code
     },
-    async login () {
-      let res = await login()
-      this.list = res.data
+    async Login () {
+      if (!this.userAccount) {
+        this.showAlert = true
+        this.alertText = '请输入手机号/邮箱/用户名'
+        return
+      } else if (!this.passWord) {
+        this.showAlert = true
+        this.alertText = '请输入密码'
+      } else if (!this.codeNumber) {
+        this.showAlert = true
+        this.alertText = '请输入验证码'
+      }
+      let res = await login({
+        username: this.userAccount,
+        password: this.passWord,
+        captcha_code: this.codeNumber
+      })
+      this.userInfo = res.data
+      // 如果返回的值不正确，则弹出提示框，返回的值正确则返回上一页
+      if (!this.userInfo.user_id) {
+        this.showAlert = true
+        this.alertText = this.userInfo.message
+        this.getCaptchaCode()
+      } else {
+        this.RECORD_USERINFO(this.userInfo)
+        this.$router.go(-1)
+      }
+    },
+    closeTip () {
+      this.showAlert = false
     }
   }
 }

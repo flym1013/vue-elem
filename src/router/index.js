@@ -6,6 +6,9 @@ import Router from 'vue-router'
 const home = () => import('../page/home/home.vue')
 const foodCategory = () => import('../page/home/foodCategory.vue')
 const shopDetail = () => import('../page/home/shopDetail.vue')
+const shopIntroduce = () => import('../page/home/shopIntroduce.vue')
+const foodSafe = () => import('../page/home/foodSafe.vue')
+const foodDetail = () => import('../page/home/foodDetail.vue')
 
 const loginPage = () => import('../page/login/loginPage.vue')
 const forgetPage = () => import('../page/login/forget.vue')
@@ -14,8 +17,19 @@ const city = () => import('../page/login/city.vue')
 
 const search = () => import('../page/search/search.vue')
 const order = () => import('../page/order/order.vue')
+const confirmOrder = () => import('../page/order/confirmOrder.vue')
+const orderRemark = () => import('../page/order/orderRemark.vue')
+const invoice = () => import('../page/order/invoice.vue')
+const choosedAddress = () => import('../page/order/chooseAddress.vue')
+const payment = () => import('../page/order/payment.vue')
+const orderDetail = () => import('../page/order/orderDetail.vue')
 
 const myInformation = () => import('../page/myInformation/myInformation.vue')
+const userInfo = () => import('../page/myInformation/userInfo.vue')
+const editUsername = () => import('../page/myInformation/editUsername.vue')
+const editAddress = () => import('../page/myInformation/editAddress.vue')
+const addNewAddress = () => import('../page/myInformation/addNewAddress.vue')
+const addAddressDetail = () => import('../page/myInformation/addAddressDetail.vue')
 const balance = () => import('../page/myInformation/balance.vue')
 const balanceDetail = () => import('../page/myInformation/balanceDetail.vue')
 const points = () => import('../page/myInformation/points.vue')
@@ -37,7 +51,7 @@ export default new Router({
     // 重置密码页面
     { path: '/forgetPage', component: forgetPage },
     // 首页home
-    { path: '/home', component: home },
+    { path: '/home', component: home, meta: { keepAlive: true } },
     // 首页-选择地址
     { path: '/selectLoction', component: selectLoction },
     // 首页-选择地址-选择详细地址
@@ -46,14 +60,43 @@ export default new Router({
     { path: '/foodCategory', component: foodCategory },
     // 首页-选择分类-详情
     { path: '/shopDetail', component: shopDetail },
+    // 首页-商铺-商铺详情
+    { path: '/shopIntroduce', component: shopIntroduce },
+    // 首页-商铺-商铺详情-食品监督
+    { path: '/foodSafe', component: foodSafe },
+    // 首页-商铺-商铺列表-食品详情
+    { path: '/foodDetail', component: foodDetail },
+    // 首页-商铺-商铺列表-确认订单
+    { path: '/confirmOrder', component: confirmOrder },
+
     // 搜索search
     { path: '/search', component: search },
     // 订单order
     { path: '/order', component: order },
+    // 确认订单-订单备注
+    { path: '/orderRemark', component: orderRemark },
+    // 确认订单-发票抬头
+    { path: '/invoice', component: invoice },
+    // 选择地址
+    { path: '/choosedAddress', component: choosedAddress },
+    // 在线支付页面
+    { path: '/payment', component: payment },
+    // 订单详情
+    { path: '/orderDetail', component: orderDetail },
 
     // 我的信息myInformation
     { path: '/myInformation', component: myInformation },
-        // 我的信息-我的余额
+    // 我的信息-信息详情
+    { path: '/myInformation/userInfo', component: userInfo },
+    // 我的信息-信息详情-修改用户名
+    { path: '/myInformation/editUsername', component: editUsername },
+    // 我的信息-信息详情-修改地址
+    { path: '/myInformation/editAddress', component: editAddress },
+    // 我的信息-信息详情-修改地址-新增地址
+    { path: '/myInformation/addNewAddress', component: addNewAddress },
+    // 我的信息-信息详情-修改地址-新增地址-详细地址查询
+    { path: '/myInformation/addAddressDetail', component: addAddressDetail },
+    // 我的信息-我的余额
     { path: '/balance', component: balance },
     // 我的信息-我的余额-余额说明
     { path: '/balanceDetail', component: balanceDetail },

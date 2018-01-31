@@ -6,8 +6,8 @@ const service = axios.create({
   timeout: 10000, // 请求超时时间
   transformRequest: [(data) => {
     // 对 data 进行任意转换处理
-    // let body = new URLSearchParams();
-    // let body = new FormData()
+    // let body = new URLSearchParams()
+    // // // let body = new FormData()
     // if (typeof data === 'object' && data !== null) {
     //   Object.keys(data).forEach(item => {
     //     if (data[item] !== null && data[item] !== undefined && data[item] !== '') {
@@ -20,13 +20,15 @@ const service = axios.create({
     //   })
     //   return body
     // }
-    return data
+    return JSON.stringify(data)
   }]
 })
-// axios.defaults.withCredentials = true
+axios.defaults.withCredentials = true // 自动获取cookie
 
 // request拦截器
 service.interceptors.request.use(config => {
+  // config.headers.post['Content_Type'] = 'application/json'
+  config.headers['Content-Type'] = 'application/json' // 改变data的数据格式
   return config
 }, error => {
   // Do something with request error

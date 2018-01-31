@@ -3,7 +3,7 @@
     <header-Top head-title="我的信息" goBack="true"></header-Top>
     <section>
       <section class="profile-number">
-        <router-link :to="userInfo&&userInfo.user_id? '/profile/info' : '/loginPage'" class="profile-link">
+        <router-link :to="userInfo&&userInfo.user_id? '/myInformation/userInfo' : '/loginPage'" class="profile-link">
           <img :src="imgBaseUrl + userInfo.avatar" class="privateImage" v-if="userInfo&&userInfo.user_id">
           <span class="privateImage" v-else>
               <svg class="privateImage-svg">
@@ -46,7 +46,7 @@
       </section>
       <section class="info-service">
         <!-- 我的订单 -->
-        <router-link :to="{ name: '', params: {} }" class="myinfo">
+        <router-link :to="'/order'" class="myinfo">
           <aside>
             <svg fill="#4aa5f0">
                 <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#service"></use>
@@ -136,6 +136,8 @@
 <script>
 import footGuide from '../../components/footer/footGuide'
 import headerTop from '../../components/header/header.vue'
+import {mapState, mapMutations} from 'vuex'
+import {getImgPath} from '../../config/utils.js'
 export default {
   data () {
     return {
@@ -146,11 +148,63 @@ export default {
       balance: 0,            // 我的余额
       count: 0,             // 优惠券个数
       pointNumber: 0,       // 积分数
+      imgBaseUrl: 'http://cangdu.org:8001/img/', // 图片域名地址
       avatar: ''             // 头像地址
     }
   },
+  created () {
+    this.init()
+    // console.log(this.userInfo) // 打印出来为null，因为getUserInfo是异步操作。
+  },
+  // mouted () {
+  //   console.log(this.userInfo)
+  //   this.init()
+  // },
+  // activated: function () {
+  //   this.init()
+  // },
   components: {
     footGuide, headerTop
+  },
+  computed: {
+    ...mapState([
+      'userInfo'
+    ]),
+    imgpath: function () {
+      let path
+      if (this.avatar.indexOf('/') !== -1) {
+        path = this.imgBaseUrl + this.avatar
+      } else {
+        path = getImgPath(this.avatar)
+      }
+      this.SAVE_AVANDER(path)
+      return path
+    }
+  },
+  watch: {
+    // watch等页面加载完后才执行，这时getUserInfo已请求完毕，故能监听到userInfo的变化
+    userInfo: function (value) {
+      this.init()
+    }
+  },
+  methods: {
+    ...mapMutations([
+      'SAVE_AVANDER'
+    ]),
+    init () {
+      // console.log(this.userInfo)
+      if (this.userInfo && this.userInfo.user_id) {
+        this.avatar = this.userInfo.avatar
+        this.username = this.userInfo.username
+        this.mobile = this.userInfo.mobile || '暂无绑定手机号'
+        this.balance = this.userInfo.balance
+        this.count = this.userInfo.gift_amount
+        this.pointNumber = this.userInfo.point
+      } else {
+        this.username = '登录/注册'
+        this.mobile = '暂无绑定手机号'
+      }
+    }
   }
 }
 </script>

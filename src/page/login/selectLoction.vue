@@ -102,6 +102,7 @@ export default {
 @import 'src/style/mixin.scss';
 .page{
   padding-top: 1.95rem;
+  position: absolute;
   p, span{
       font-family: Helvetica Neue,Tahoma,Arial;
   }

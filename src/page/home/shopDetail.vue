@@ -9,7 +9,7 @@
       <header class="shopDetail_header" ref="shopheader" :style="{zIndex: showActivities? '14':'10'}">
         <img :src="imgBaseUrl + canteenDetail.image_path" class="header_cover_img">
         <section class="descript_header">
-          <router-link :to="{ name: '', params: {} }" class="description_top">
+          <router-link :to="'/shopIntroduce'" class="description_top">
             <section class="description_left">
                 <img :src="imgBaseUrl + canteenDetail.image_path">
             </section>
@@ -36,6 +36,23 @@
       </header>
       <transition name="fade">
         <section class="activities_details" v-if="showActivities">
+          <h2 class="activities_shoptitle">{{canteenDetail.name}}</h2>
+          <h3 class="activities_ratingstar"></h3>
+          <section class="activities_list">
+            <header activities_title_style>
+              <span> 优惠信息</span>
+            </header>
+            <ul>
+              <li v-for="item in canteenDetail.activities" :key="item.id">
+                <span class="activities_icon" :style="{backgroundColor: '#' + item.icon_color, borderColor: '#' + item.icon_color}">{{item.icon_name}}</span>
+                <span>{{item.description}}（APP专享）</span>
+              </li>
+            </ul>
+          </section>
+          <section class="activities_shopinfo">
+            <header class="activities_title_style"><span>商家公告</span></header>
+            <p>{{promotionInfo}}</p>
+          </section>
           <svg width="60" height="60" class="close_activities" @click.stop="showActivitiesFun">
               <circle cx="30" cy="30" r="25" stroke="#555" stroke-width="1" fill="none"/>
               <line x1="22" y1="38" x2="38" y2="22" style="stroke:#999;stroke-width:2"/>
@@ -61,7 +78,7 @@
                 <li v-for="(item,index) in canteenFoodList" :key="index" class="menu_left_li" :class="{activity_menu: index == menuIndex}" @click="chooseMenu(index, $event)">
                   <img :src="getImgPath(item.icon_url)" v-if="item.icon_url">
                   <span>{{item.name}}</span>
-                  <span></span>
+                  <span class="category_num" v-if="categoryNum[index]&&item.type==1">{{categoryNum[index]}}</span>
                 </li>
               </ul>
             </section>
@@ -80,7 +97,7 @@
                     </p>
                   </header>
                   <section v-for="(foods,foodindex) in item.foods" :key="foodindex" class="menu_detail_list">
-                    <router-link :to="{ name: '', params: {} }" tag="div" class="menu_detail_link">
+                    <router-link :to="{path: '/foodDetail', query:{image_path:foods.image_path, description: foods.description, month_sales: foods.month_sales, name: foods.name, rating: foods.rating, rating_count: foods.rating_count, satisfy_rate: foods.satisfy_rate, foods, shopId}}" tag="div" class="menu_detail_link">
                       <section class="menu_food_img">
                         <img :src="imgBaseUrl + foods.image_path">
                       </section>
@@ -108,26 +125,170 @@
                         <span>¥</span>
                         <span>{{foods.specfoods[0].price}}</span>
                         <span v-if="foods.specifications.length">起</span>
-
                       </section>
+                      <buy-cart :shopId='shopId' :foods='foods' @showChooseList="showChooseList" @showReduceTip="showReduceTip"></buy-cart>
                     </footer>
                   </section>
                 </li>
               </ul>
             </section>
           </section>
+          <section class="buy_cart_container">
+            <section class="cart_icon_num" @click="toggleCartList">
+              <div class="cart_icon_container" :class="{cart_icon_activity: totalPrice > 0}">
+                <span v-if="totalNum" class="cart_list_length">{{totalNum}}</span>
+                <span class="cart_icon">
+                  <img src="../../images/shop_cart.svg" alt="" />
+                </span>
+              </div>
+              <div class="cart_num">
+                <div>¥ {{totalPrice}}</div>
+                <div>配送费¥{{deliveryFee}}</div>
+              </div>
+            </section>
+            <section class="gotopay" :class="{gotopay_acitvity: minimumOrderAmount <= 0}">
+              <span class="gotopay_button_style" v-if="minimumOrderAmount > 0">还差¥{{minimumOrderAmount}}起送</span>
+              <router-link :to="{path:'/confirmOrder', query:{geohash, shopId}}" class="gotopay_button_style" v-else >去结算</router-link>
+            </section>
+          </section>
+          <transition name="toggle-cart">
+            <section class="cart_food_list" v-show="showCartList&&cartFoodList.length">
+              <header>
+                <h4>购物车</h4>
+                <div class="" @click="clearCart">
+                  <svg>
+                      <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cart-remove"></use>
+                  </svg>
+                  <span class="clear_cart">清空</span>
+                </div>
+              </header>
+              <section class="cart_food_details" id="cartFood">
+                <ul>
+                  <li v-for="(item, index) in cartFoodList" :key="index" class="cart_food_li">
+                    <div class="cart_list_num">
+                      <p class="ellipsis">{{item.name}}</p>
+                      <p class="ellipsis">{{item.specs}}</p>
+                    </div>
+                    <div class="cart_list_price">
+                      <span>¥</span>
+                      <span>{{item.price}}</span>
+                    </div>
+                    <section class="cart_list_control">
+                      <span @click="removeOutCart(item.category_id, item.item_id, item.food_id, item.name, item.price, item.specs)">
+                        <svg xmlns="http://www.w3.org/200/svg" version="1.1" class="add_icon">
+                           <line x1="3" x2="13" y1="9" y2="9" stroke="black" stroke-width="2" style="stroke:rgb(49,144,232)" />
+                        </svg>
+                      </span>
+                      <span class="cart_num">{{item.num}}</span>
+                      <svg class="cart_add" @click="addToCart(item.category_id, item.item_id, item.food_id, item.name, item.price, item.specs)">
+                        <line x1="3" x2="13" y1="8" y2="8" stroke="black" stroke-width="2" style="stroke:rgb(49,144,232)" />
+                        <line x1="8" x2="8" y1="3" y2="13" stroke="black" stroke-width="2" style="stroke:rgb(49,144,232)" />
+                      </svg>
+                    </section>
+                  </li>
+                </ul>
+              </section>
+            </section>
+          </transition>
         </section>
       </transition>
       <transition name="fade-choose">
         <section v-show="changeShowType =='rating'" class="rating_container">
-
+          <section>
+            <header class="rating_header">
+              <section class="rating_header_left">
+                <p>{{canteenDetail.rating}}</p>
+                <p>综合评价</p>
+                <p>高于周边商家{{(canteenScoresList.compare_rating*100).toFixed(2)}}%</p>
+              </section>
+              <section class="rating_header_right">
+                <p>
+                  <span>服务态度</span>
+                  <span class="rating_num">{{canteenScoresList.service_score}}</span>
+                </p>
+                <p>
+                  <span>菜品评价</span>
+                  <span class="rating_num">{{canteenScoresList.food_score}}</span>
+                </p>
+                <p>
+                  <span>送达时间</span>
+                  <span class="delivery_time">{{canteenScoresList.order_lead_time}}分钟</span>
+                </p>
+              </section>
+            </header>
+            <ul class="tag_list_ul">
+              <li v-for="(item, index) in canteenTagList" :class="{tagActivity: ratingTageIndex === index}" @click="changeTgeIndex(item.name, index)">{{item.name}}({{item.count}})</li>
+            </ul>
+            <ul class="rating_list_ul">
+              <li class="rating_list_li" v-for="(item, index) in canteenCommentList" :key="index">
+                <img :src="getImgPath(item.avatar)" alt=""  class="user_avatar"/>
+                <section class="rating_list_details">
+                  <header>
+                    <section class="username_star">
+                      <p class="username">{{item.username}}</p>
+                      <p class="star_desc">
+                        <span class="time_spent_desc">{{item.time_spent_desc}}</span>
+                      </p>
+                    </section>
+                    <time class="rated_at">{{item.rated_at}}</time>
+                  </header>
+                  <ul class="food_img_ul">
+                    <li v-for="(item, index) in item.item_ratings" :key="index">
+                      <img :src="getImgPath(item.image_hash)" v-if="item.image_hash">
+                      <!-- <img src="https://fuss10.elemecdn.com/1/b5/23ca27369a0eed1ce0c3fc0a5ba8bjpeg.jpeg" alt="" /> -->
+                    </li>
+                  </ul>
+                  <ul class="food_name_ul">
+                    <li v-for="(item, index) in item.item_ratings" :key="index" class="ellipsis">
+                      {{item.food_name}}
+                    </li>
+                  </ul>
+                </section>
+              </li>
+            </ul>
+          </section>
         </section>
       </transition>
     </section>
+    <section>
+      <transition name="fade">
+        <div class="specs_cover" @click="showChooseList" v-if="showSpecs"></div>
+      </transition>
+      <transition name="fadeBounce">
+        <div class="specs_list" v-if="showSpecs">
+          <header class="specs_list_header">
+            <h4 class="ellipsis">{{choosedFoods.name}}</h4>
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" version="1.1"class="specs_cancel" @click="showChooseList">
+                <line x1="0" y1="0" x2="16" y2="16"  stroke="#666" stroke-width="1.2"/>
+                <line x1="0" y1="16" x2="16" y2="0"  stroke="#666" stroke-width="1.2"/>
+            </svg>
+          </header>
+          <section class="specs_details">
+            <h5 class="specs_details_title">{{choosedFoods.specifications[0].name}}</h5>
+            <ul>
+              <li v-for="(item, itemIndex) in choosedFoods.specifications[0].values" :class="{specs_activity: itemIndex == specsIndex}" @click="chooseSpecs(itemIndex)">
+                  {{item}}
+              </li>
+            </ul>
+          </section>
+          <footer class="specs_footer">
+            <div class="specs_price">
+              <span>¥ </span>
+              <span>{{choosedFoods.specfoods[specsIndex].price}}</span>
+            </div>
+            <div class="specs_addto_cart" @click="addSpecs(choosedFoods.category_id, choosedFoods.item_id, choosedFoods.specfoods[specsIndex].food_id, choosedFoods.specfoods[specsIndex].name, choosedFoods.specfoods[specsIndex].price, choosedFoods.specifications[0].values[specsIndex], choosedFoods.specfoods[specsIndex].packing_fee, choosedFoods.specfoods[specsIndex].sku_id, choosedFoods.specfoods[specsIndex].stock)">加入购物车</div>
+          </footer>
+        </div>
+      </transition>
+    </section>
+    <transition name="fade">
+        <p class="show_delete_tip" v-if="showDeleteTip">多规格商品只能去购物车删除哦</p>
+    </transition>
   </div>
 </template>
 
 <script>
+import buyCart from '../../components/common/buyCart.vue'
 import { getCanteenDetail, getCanteenFoodList, getCanteenComment, getCanteenCommentScores, getCanteenCommentTag, msiteAdress } from '../../service/getData.js'
 import {mapState, mapMutations} from 'vuex'
 import { getImgPath } from '../../config/utils.js'
@@ -138,18 +299,30 @@ export default {
       imgBaseUrl: 'http://cangdu.org:8001/img/',
       canteenDetail: {
         activities: []
-      }, // 餐馆详情
+      }, // 餐馆店铺详情
       // menuIndex: 0, // 已选菜单索引值，默认为0
       TitleDetailIndex: null, // 点击展示列表头部详情
       canteenFoodList: {
         foods: []
       }, // 餐馆食品列表
+      canteenScoresList: {}, // 餐馆评价分数
+      canteenTagList: [], // 餐馆的评价分类
       canteenCommentList: [], // 餐馆评论列表
       showActivities: false, // 是否显示活动详情
       changeShowType: 'food', // 切换显示商品或者评价
       listHeight: [], // 右侧食物的的高度
+      showSpecs: false, // 控制显示食品规格
+      specsIndex: 0, // 当前选中的规格索引值
+      choosedFoods: null, // 当前选中食物数据
       scrollY: '', // 存放实时获取右侧的y值
       foodScroll: null,  // 食品列表scroll
+      categoryNum: [], // 商品类型右上角已加入购物车的数量
+      totalPrice: 0,  // 总共价格
+      cartFoodList: [],  // 购物车商品列表
+      showCartList: false, // 显示购物车列表
+      showDeleteTip: false, // 多规格商品点击减按钮，弹出提示框
+      ratingTageIndex: 0, // 评价分类索引
+      shopId: null, // 商店id值
       canteenQuery: {
         tag_name: '',
         offset: 0,
@@ -160,20 +333,23 @@ export default {
   },
   async created () {
     this.geohash = this.$route.query.geohash
-    this.shopId = this.$route.query.id
+    this.shopId = this.$route.query.id // 商铺的id
     this.init()
     await this.getCanteenDetail()
     await this.getCanteenFoodList()
+    await this.INIT_BUYCART()
     await this.getCanteenComment()
     await this.getCanteenCommentScores()
     await this.getCanteenCommentTag()
     this.initScorll()
     this.calculateHeight()
   },
-  components: {},
+  components: {
+    buyCart
+  },
   computed: {
     ...mapState([
-      'latitude', 'longitude'
+      'latitude', 'longitude', 'cartList'
     ]),
     promotionInfo: function () {
       return this.canteenDetail.promotion_info || '欢迎光临，用餐高峰期请提前下单，谢谢。'
@@ -189,14 +365,47 @@ export default {
         }
       }
       return 0
+    },
+    // 当前商店购物信息
+    shopCart: function () {
+      return {...this.cartList[this.shopId]}
+    },
+    // 购物车商品的总数量
+    totalNum: function () {
+      let num = 0
+      this.cartFoodList.forEach(item => {
+        num += item.num
+      })
+      return num
+    },
+    // 配送费
+    deliveryFee: function () {
+      if (this.canteenDetail) {
+        return this.canteenDetail.float_delivery_fee
+      } else {
+        return null
+      }
+    },
+    // 还差多少元起送，为负数时显示去结算按钮
+    minimumOrderAmount: function () {
+      if (this.canteenDetail) {
+        return this.canteenDetail.float_minimum_order_amount - this.totalPrice
+      } else {
+        return null
+      }
+    }
+  },
+  watch: {
+    shopCart: function (value) {
+      this.initCategoryNum()
     }
   },
   methods: {
     ...mapMutations([
-      'RECORD_ADDRESS'
+      'RECORD_ADDRESS', 'ADD_CART', 'REDUCE_CART', 'INIT_BUYCART', 'CLEAR_CART', 'RECORD_SHOPDETAIL'
     ]),
     getImgPath (path) {
-      getImgPath(path)
+      return getImgPath(path)
     },
     async init () {
       if (!this.latitude) {
@@ -212,6 +421,72 @@ export default {
     // 控制活动详情页显示和隐藏
     showActivitiesFun () {
       this.showActivities = !this.showActivities
+    },
+    // 规格页面弹窗显示隐藏
+    showChooseList (foods) {
+      if (foods) {
+        this.choosedFoods = foods
+        this.specsIndex = 0
+      }
+      this.showSpecs = !this.showSpecs
+      // console.log(111)
+    },
+    // //显示提示，无法减去商品
+    showReduceTip () {
+      this.showDeleteTip = true
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        clearTimeout(this.timer)
+        this.showDeleteTip = false
+      }, 1500)
+    },
+    // 记录当前所选规格的索引值
+    chooseSpecs (index) {
+      this.specsIndex = index
+    },
+    // 多规格商品加入购物车
+    addSpecs (category_id, item_id, food_id, name, price, specs, packing_fee, sku_id, stock) {
+      this.ADD_CART({shopid: this.shopId, category_id, item_id, food_id, name, price, specs, packing_fee, sku_id, stock})
+      this.showChooseList()
+    },
+    // 初始化和shopCart变化时，重新获取购物车改变过的数据，赋值 categoryNum，totalPrice，cartFoodList，整个数据流是自上而下的形式，所有的购物车数据都交给vuex统一管理，包括购物车组件中自身的商品数量，使整个数据流更加清晰
+    initCategoryNum () {
+      let newArr = []
+      let cartFoodNum = 0
+      this.totalPrice = 0
+      this.cartFoodList = []
+      if (!Array.isArray(this.canteenFoodList)) return
+      // 由于初始化时canteenFoodList定义为对象，故判断它是否是数组，若是数组就执行下面操作
+      this.canteenFoodList.forEach((item, index) => {
+        if (this.shopCart && this.shopCart[item.foods[0].category_id]) {
+          let num = 0
+          Object.keys(this.shopCart[item.foods[0].category_id]).forEach(itemid => {
+            Object.keys(this.shopCart[item.foods[0].category_id][itemid]).forEach(foodid => {
+              let foodItem = this.shopCart[item.foods[0].category_id][itemid][foodid]
+              num += foodItem.num
+              if (item.type === 1) {
+                this.totalPrice += foodItem.num * foodItem.price
+                if (foodItem.num > 0) {
+                  this.cartFoodList[cartFoodNum] = {}
+                  this.cartFoodList[cartFoodNum].category_id = item.foods[0].category_id
+                  this.cartFoodList[cartFoodNum].item_id = itemid
+                  this.cartFoodList[cartFoodNum].food_id = foodid
+                  this.cartFoodList[cartFoodNum].num = foodItem.num
+                  this.cartFoodList[cartFoodNum].price = foodItem.price
+                  this.cartFoodList[cartFoodNum].name = foodItem.name
+                  this.cartFoodList[cartFoodNum].specs = foodItem.specs
+                  cartFoodNum++
+                }
+              }
+            })
+          })
+          newArr[index] = num
+        } else {
+          newArr[index] = 0
+        }
+      })
+      this.totalPrice = this.totalPrice.toFixed(2)
+      this.categoryNum = [...newArr]
     },
     // 选中左侧的菜单列表
     chooseMenu (index, event) {
@@ -230,6 +505,26 @@ export default {
         this.TitleDetailIndex = index
       }
     },
+    // 加入购物车，所需7个参数，商铺id，食品分类id，食品id，食品规格id，食品名字，食品价格，食品规格
+    addToCart (category_id, item_id, food_id, name, price, specs) {
+      this.ADD_CART({shopid: this.shopId, category_id, item_id, food_id, name, price, specs})
+    },
+    // 移出购物车，所需7个参数，商铺id，食品分类id，食品id，食品规格id，食品名字，食品价格，食品规格
+    removeOutCart (category_id, item_id, food_id, name, price, specs) {
+      this.REDUCE_CART({shopid: this.shopId, category_id, item_id, food_id, name, price, specs})
+    },
+    // 清空购物车
+    clearCart () {
+      this.toggleCartList()
+      this.CLEAR_CART(this.shopId)
+    },
+    // 控制购物列表是否显示
+    toggleCartList () {
+      if (this.cartFoodList.length) {
+        this.showCartList = !this.showCartList
+      }
+      // this.cartFoodList.length ? this.showCartList = !this.showCartList : true
+    },
     // better-scroll包使用
     initScorll () {
       this.meunScroll = new BScroll(this.$refs.wrapperMenu, {
@@ -246,6 +541,7 @@ export default {
         this.scrollY = Math.abs(Math.round(pos.y))
       })
     },
+    // 获去列表整个高度
     calculateHeight () {
       let foodlist = this.$refs.menuFoodList.getElementsByClassName('food-list-hook')
       let height = 0
@@ -256,6 +552,12 @@ export default {
         this.listHeight.push(height)
       }
     },
+    // 获取不同类型的评价列表
+    changeTgeIndex (str, index) {
+      this.ratingTageIndex = index
+      this.canteenQuery.tag_name = str
+      this.getCanteenComment()
+    },
     // 获取餐馆详情
     async getCanteenDetail () {
       let res = await getCanteenDetail({
@@ -264,6 +566,8 @@ export default {
         longitude: this.longitude ? this.longitude : ''
       })
       this.canteenDetail = res.data
+      // 记录当前所选中的商铺信息到vuex中
+      this.RECORD_SHOPDETAIL(this.canteenDetail)
     },
     // 获取餐馆食品列表
     async getCanteenFoodList () {
@@ -271,6 +575,7 @@ export default {
         restaurant_id: this.shopId
       })
       this.canteenFoodList = res.data
+      // console.log(this.canteenFoodList)
     },
     // 获取餐馆评论列表
     async getCanteenComment () {
@@ -405,6 +710,54 @@ export default {
     background-color: #262626;
     z-index: 200;
     padding: 1.25rem;
+    .activities_shoptitle{
+      text-align: center;
+      @include sc(.8rem, #fff);
+    }
+    .activities_ratingstar{
+      display: flex;
+      justify-content: center;
+      transform: scale(2.2);
+      margin-top: .7rem;
+    }
+    .activities_list{
+      margin: 1.5rem 0 1rem 0;
+      @include sc(.5rem, #fff);
+      li{
+        margin-bottom: .2rem;
+        .activities_icon{
+          padding: 0 .02rem;
+          display: inline-block;
+          border: 0.025rem solid #fff;
+          border-radius: 0.1rem;
+        }
+        span{
+          color: #fff;
+          line-height: .6rem;
+        }
+      }
+    }
+    .activities_shopinfo{
+      p{
+        line-height: .7rem;
+        @include sc(.5rem, #fff);
+      }
+      .activities_title_style{
+        text-align: center;
+        margin-bottom: 1rem;
+        span{
+          @include sc(.5rem, #fff);
+          border: 0.025rem solid #555;
+          padding: .2rem .4rem;
+          border-radius: 0.5rem;
+        }
+      }
+    }
+    .close_activities{
+      position: absolute;
+      bottom: 1rem;
+      @include cl;
+    }
   }
   .change_show_type{
     display: flex;
@@ -450,7 +803,20 @@ export default {
         span{
           @include sc(.6rem,#666);
         }
-        .category_num{}
+        .category_num{
+          position: absolute;
+          top: .1rem;
+          right: .1rem;
+          background-color: #ff461d;
+          line-height: .65rem;
+          text-align: center;
+          border-radius: 50%;
+          border: 0.025rem solid #ff461d;
+          min-width: .6rem;
+          height: .65rem;
+          @include sc(.5rem, #fff);
+          font-family: Helvetica Neue,Tahoma,Arial;
+        }
       }
       .activity_menu{
         border-left: .15rem solid #3190e8;
@@ -629,10 +995,411 @@ export default {
       }
     }
   }
+  .specs_cover{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0,0,0,.4);
+    z-index: 17;
+  }
+  .specs_list{
+    position: fixed;
+    top: 35%;
+    left:15%;
+    width: 70%;
+    background-color: #fff;
+    z-index: 18;
+    border: 1px;
+    border-radius: .2rem;
+    .specs_list_header{
+      h4{
+        @include sc(.7rem,#222);
+        font-weight: normal;
+        text-align: center;
+        padding: .5rem;
+      }
+      .specs_cancel{
+        position: absolute;
+        top: .5rem;
+        right: .5rem;
+      }
+    }
+    .specs_details{
+      padding: .5rem;
+      .specs_details_title{
+        @include sc(.6rem,#666);
+        text-align: left;
+      }
+      ul{
+        display: flex;
+        flex-wrap: wrap;
+        padding: .4rem 0;
+        li{
+          font-size: .6rem;
+          padding: .3rem .5rem;
+          border: 0.025rem solid #ddd;
+          border-radius: .2rem;
+          margin-right: .5rem;
+          margin-bottom: .2rem;
+        }
+        .specs_activity{
+          border-color: #3199e8;
+          color: #3199e8;
+        }
+      }
+    }
+    .specs_footer{
+      @include fj;
+      align-items: center;
+      background-color: #f9f9f9;
+      padding: 0.5rem;
+      border: 1px;
+      border-bottom-left-radius: .2rem;
+      border-bottom-right-radius: .2rem;
+      .specs_price{
+        span{
+            color: #ff6000;
+        }
+        span:nth-of-type(1){
+            font-size: .5rem;
+        }
+        span:nth-of-type(2){
+            font-size: .8rem;
+            font-weight: bold;
+            font-family: Helvetica Neue,Tahoma;
+        }
+      }
+      .specs_addto_cart{
+          @include wh(4rem, 1.3rem);
+          background-color: #3199e8;
+          border: 1px;
+          border-radius: 0.15rem;
+          @include sc(.6rem, #fff);
+          text-align: center;
+          line-height: 1.3rem;
+      }
+    }
+  }
+  .show_delete_tip{
+      position: fixed;
+      top: 50%;
+      left: 15%;
+      width: 70%;
+      transform: translateY(-50%);
+      background-color: rgba(0,0,0,.8);
+      z-index: 18;
+      @include sc(.65rem, #fff);
+      text-align: center;
+      padding: .5rem 0;
+      border: 1px;
+      border-radius: 0.25rem;
+  }
+  .buy_cart_container{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color:  #3d3d3f;
+    z-index: 13;
+    display: flex;
+    @include wh(100%, 2rem);
+    .cart_icon_num{
+      flex: 1;
+      .cart_icon_container{
+        display: flex;
+        background-color: #3d3d3f;
+        position: absolute;
+        padding: .4rem;
+        border: 0.18rem solid #444;
+        border-radius: 50%;
+        left: .5rem;
+        top: -.7rem;
+        .cart_icon{
+          @include wh(1.2rem, 1.2rem);
+        }
+        .cart_list_length{
+          position: absolute;
+          top: -.25rem;
+          right: -.25rem;
+          background-color: #ff461d;
+          line-height: .7rem;
+          text-align: center;
+          border-radius: 50%;
+          border: 0.025rem solid #ff461d;
+          min-width: .7rem;
+          height: .7rem;
+          @include sc(.5rem, #fff);
+          font-family: Helvetica Neue,Tahoma,Arial;
+        }
+      }
+      .cart_icon_activity{
+        background-color: #3190e8;
+      }
+      .cart_num{
+        @include ct;
+        left: 3.5rem;
+        div{
+          color: #fff;
+        }
+        div:nth-of-type(1){
+          font-size: .8rem;
+          font-weight: bold;
+          margin-bottom: .1rem;
+        }
+        div:nth-of-type(2){
+          font-size: .4rem;
+        }
+      }
+    }
+    .gotopay{
+      position: absolute;
+      right: 0;
+      background-color: #535356;
+      @include wh(5rem, 100%);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .gotopay_button_style{
+        @include sc(.7rem, #fff);
+        font-weight: bold;
+      }
+    }
+    .gotopay_acitvity{
+      background-color: #4cd964;
+    }
+  }
+  .cart_food_list{
+    position: fixed;
+    padding-bottom: 2rem;
+    width: 100%;
+    z-index: 12;
+    bottom: 0;
+    left: 0;
+    background-color: #fff;
+    header{
+      @include fj;
+      align-items: center;
+      padding: .3rem .6rem;
+      background-color: #eceff1;
+      svg{
+        @include wh(.6rem,.6rem);
+        vertical-align: middle;
+      }
+      h4{
+        @include sc(.7rem, #666);
+      }
+      .clear_cart{
+        @include sc(.6rem, #666);
+      }
+    }
+    .cart_food_details{
+      background-color: #fff;
+      max-height: 20rem;
+      overflow-y: auto;
+      .cart_food_li{
+        @include fj;
+        padding: .6rem .5rem;
+        .cart_list_num{
+          width: 55%;
+          p:nth-of-type(1){
+            @include sc(.7rem, #666);
+            font-weight: bold;
+            text-align: left;
+          }
+          p:nth-of-type(2){
+            @include sc(.4rem, #666);
+          }
+        }
+        .cart_list_price{
+          font-size: 0;
+          span:nth-of-type(1){
+            @include sc(.6rem, #f60);
+            font-family: Helvetica Neue,Tahoma;
+          }
+          span:nth-of-type(2){
+            @include sc(.7rem, #f60);
+            font-family: Helvetica Neue,Tahoma;
+            font-weight: bold;
+          }
+        }
+        .cart_list_control{
+          display: flex;
+          align-items: center;
+          span{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          svg{
+            @include wh(.9rem, .9rem);
+            fill: #3190e8;
+          }
+          .cart_num{
+            @include sc(.65rem, #666);
+            min-width: 1rem;
+            text-align: center;
+            font-family: Helvetica Neue,Tahoma;
+          }
+        }
+      }
+    }
+  }
+  .rating_container{
+    flex: 1;
+    overflow-y: scroll;
+    flex-direction: column;
+    p, span, li, time{
+      font-family: Helvetica Neue,Tahoma,Arial;
+    }
+    .rating_header{
+      display: flex;
+      background-color: #fff;
+      padding: .8rem .5rem;
+      margin-bottom: 0.5rem;
+      .rating_header_left{
+        flex: 3;
+        text-align: center;
+        p:nth-of-type(1){
+          @include sc(1.2rem, #f60);
+        }
+        p:nth-of-type(2){
+          @include sc(.65rem, #666);
+          margin-bottom: .1rem;
+        }
+        p:nth-of-type(3){
+          @include sc(.4rem, #999);
+        }
+      }
+      .rating_header_right{
+        flex: 4;
+        p{
+          font-size: .65rem;
+          line-height: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          margin-left: 1rem;
+          span:nth-of-type(1){
+            color: #666;
+            margin-right: .5rem;
+          }
+          .rating_num{
+            width: 3rem;
+            @include sc(.55rem, #f60);
+          }
+          .delivery_time{
+            @include sc(.4rem, #999);
+          }
+        }
+      }
+    }
+    .tag_list_ul{
+      display: flex;
+      flex-wrap: wrap;
+      background-color: #fff;
+      padding: .5rem;
+      li{
+        @include sc(.6rem, #6d7885);
+        padding: .3rem .3rem;
+        background-color: #ebf5ff;
+        border-radius: 0.2rem;
+        border: 1px;
+        margin: 0 .4rem .2rem 0;
+      }
+      .tagActivity{
+        background-color: #3190e8;
+        color: #fff;
+      }
+    }
+    .rating_list_ul{
+      background-color: #fff;
+      padding: 0 .5rem;
+      .rating_list_li{
+        border-top: 1px solid #f1f1f1;
+        display: flex;
+        padding: .6rem 0;
+        .user_avatar{
+          @include wh(1.5rem, 1.5rem);
+          border: 0.025rem;
+          border-radius: 50%;
+          margin-right: .8rem;
+        }
+        .rating_list_details{
+          flex: 1;
+          header{
+            display: flex;
+            flex: 1;
+            justify-content: space-between;
+            margin-bottom: .3rem;
+            .username_star{
+              @include sc(.55rem, #666);
+              .username{
+                color: #666;
+                margin-bottom: .2rem;
+              }
+              .star_desc{
+                display: flex;
+                align-items: center;
+                .time_spent_desc{
+                  @include sc(.55rem, #666)
+                  margin-left: .15rem;
+                }
+              }
+            }
+            .rated_at{
+              @include sc(.4rem, #999);
+            }
+          }
+          .food_img_ul{
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: .4rem;
+            li{
+              img{
+                @include wh(3rem, 3rem);
+                margin-right: .4rem;
+                display: block;
+              }
+            }
+          }
+          .food_name_ul{
+            display: flex;
+            flex-wrap: wrap;
+            li{
+              @include sc(.55rem, #999);
+              width: 2.2rem;
+              padding: .2rem;
+              border: 0.025rem solid #ebebeb;
+              border-radius: 0.15rem;
+              margin-right: .3rem;
+              margin-bottom: 4px;
+            }
+          }
+        }
+      }
+    }
+  }
   .fade-enter-active, .fade-leave-active {
       transition: opacity .5s;
   }
   .fade-enter, .fade-leave-active {
       opacity: 0;
+  }
+  .fade-choose-enter-active, .fade-choose-leave-active {
+      transition: opacity .5s;
+  }
+  .fade-choose-leave, .fade-choose-leave-active {
+      display: none;
+  }
+  .fade-choose-enter, .fade-choose-leave-active {
+      opacity: 0;
+  }
+  .toggle-cart-enter-active, .toggle-cart-leave-active {
+      transition: all .3s ease-out;
+  }
+  .toggle-cart-enter, .toggle-cart-leave-active {
+      transform: translateY(100%);
   }
 </style>

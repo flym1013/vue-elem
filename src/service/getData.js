@@ -26,7 +26,8 @@ export function cityGuess (opt) {
 export function msiteAdress (opt) {
   return fetch({
     url: '/v2/pois/' + opt,
-    method: 'get'
+    method: 'get',
+    params: opt
   })
 }
 
@@ -87,7 +88,7 @@ export function exchangeRedEnvelope (opt) {
   return fetch({
     url: '/v1/users/' + opt.user_id + '/hongbao/exchange',
     method: 'post',
-    data: {'limit': opt.limit, 'offset': opt.offset}
+    data: opt
   })
 }
 
@@ -274,5 +275,134 @@ export function getCanteenCommentTag (opt) {
     url: 'ugc/v2/restaurants/' + opt.restaurant_id + '/ratings/tags',
     method: 'get',
     params: {has_content: true, tag_name: opt.tag_name, offset: opt.offset, limit: opt.limit}
+  })
+}
+
+// 获取收货地址列表
+/**
+*@param user_id    用户id y
+*/
+export function getAddressList (opt) {
+  return fetch({
+    url: '/v1/users/' + opt.user_id + '/addresses',
+    method: 'get'
+  })
+}
+
+// 删除收获地址爱
+/**
+*@param user_id    用户id y
+*@param address_id    收货地址id y
+*/
+export function deleteAddress (opt) {
+  return fetch({
+    url: '/v1/users/' + opt.user_id + '/addresses/' + opt.address_id,
+    method: 'DELETE'
+  })
+}
+
+// 添加收货地址
+/**
+*@param user_id    用户id y
+*@param address_id    收货地址id y
+.........
+*/
+export function addNewAddress (opt) {
+  return fetch({
+    url: '/v1/users/' + opt.user_id + '/addresses',
+    method: 'post',
+    data: opt
+  })
+}
+
+// 修改密码
+/**
+*@param username    用户名 y
+*@param oldpassWord  旧密码 y
+.........
+*/
+export function changePassword (opt) {
+  return fetch({
+    url: '/v2/changepassword',
+    method: 'post',
+    data: opt
+  })
+}
+
+// 退出登录
+export function siginOut (opt) {
+  return fetch({
+    url: '/v2/signout',
+    method: 'get'
+  })
+}
+
+// 加入购物车
+/**
+*@param restaurant_id     餐馆ID y
+*@param geohash  经纬度 y
+*@param entities   购物车数据 y
+.........
+*/
+export function checkout (opt) {
+  return fetch({
+    url: '/v1/carts/checkout',
+    method: 'post',
+    data: opt
+  })
+}
+
+// 下单
+/**
+*@param user_id    用户ID y
+*@param cart_id  购物车ID y
+*@param address_id   收货地址ID y
+*@param restaurant_id      餐馆ID y
+*@param geohash  经纬度 y
+*@param description   备注 y
+*@param entities  购物车数据 y
+.........
+*/
+export function placeOrders (opt) {
+  return fetch({
+    url: '/v1/users/' + opt.user_id + '/carts/' + opt.cart_id + '/orders',
+    method: 'post',
+    data: opt
+  })
+}
+
+/**
+ * 获取快速备注列表
+ */
+export function getRastRemark (opt) {
+  return fetch({
+    url: '/v1/carts/' + opt.cart_id + '/remarks',
+    method: 'get',
+    params: {sig: opt.sig}
+  })
+}
+
+// 获取订单列表
+export function getOrderList (opt) {
+  return fetch({
+    url: '/bos/v2/users/' + opt.user_id + '/orders',
+    method: 'get',
+    params: {limit: 10000, offset: opt.offset}
+  })
+}
+// 获取订单详情
+export function getOrderDetail (opt) {
+  return fetch({
+    url: '/bos/v1/users/' + opt.user_id + '/orders/' + opt.order_id + '/snapshot',
+    method: 'get'
+  })
+}
+
+// 搜索餐馆
+export function searchRestaurants (opt) {
+  return fetch({
+    url: '/v4/restaurants',
+    method: 'get',
+    params: opt
   })
 }
