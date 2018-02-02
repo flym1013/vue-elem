@@ -51,9 +51,9 @@ export default {
       result: false
     }
   },
-  created () {
+  async created () {
     this.cityid = this.$route.params.cityid // 获取路由信息console.log(this.$route.params.cityid)
-    this.getCurrentCity()
+    await this.getCurrentCity()
     this.init()
   },
   computed: {},

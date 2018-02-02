@@ -22,7 +22,7 @@
     	</svg>
         <section @click = "gotoAddress({path: '/home', query: {geohash}})" class="guide_item">
         	<svg class="icon_style">
-                <use xmlns:xlink="http://www.w3.org/1999/xlink" :xlink:href="$route.path.indexOf('msite') !== -1? '#msiteActive' : '#msite'"></use>
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" :xlink:href="$route.path.indexOf('home') !== -1? '#msiteActive' : '#msite'"></use>
             </svg>
             <span>外卖</span>
         </section>
@@ -40,7 +40,7 @@
         </section>
         <section @click = "gotoAddress('/myInformation')" class="guide_item">
         	<svg class="icon_style">
-                <use xmlns:xlink="http://www.w3.org/1999/xlink" :xlink:href="$route.path.indexOf('profile') !== -1? '#profileActive' : '#profile'"></use>
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" :xlink:href="$route.path.indexOf('myInformation') !== -1? '#profileActive' : '#profile'"></use>
             </svg>
             <span>我的</span>
         </section>

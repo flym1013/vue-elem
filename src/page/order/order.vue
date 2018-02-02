@@ -74,6 +74,11 @@ export default {
       'userInfo', 'geohash'
     ])
   },
+  watch: {
+    userInfo: function (valus) {
+      this.getOrderList()
+    }
+  },
   methods: {
     ...mapMutations([
       'SAVE_ORDER'
@@ -85,11 +90,13 @@ export default {
     },
     // 获取订单列表
     async getOrderList () {
-      let res = await getOrderList({
-        user_id: this.userInfo.user_id,
-        offset: this.offset
-      })
-      this.orderList = res.data
+      if (this.userInfo && this.userInfo.user_id) {
+        let res = await getOrderList({
+          user_id: this.userInfo.user_id,
+          offset: this.offset
+        })
+        this.orderList = res.data
+      }
     }
   }
 }

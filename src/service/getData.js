@@ -46,7 +46,14 @@ export function shopList (opt) {
   return fetch({
     url: '/shopping/restaurants',
     method: 'get',
-    params: opt
+    params: {
+      'latitude': opt.latitude,
+      'longitude': opt.longitude,
+      'extras[]': 'activities',
+      'restaurant_category_ids[]': opt.restaurant_category_ids,
+      'delivery_mode[]': opt.delivery_mode + opt.support_ids,
+      order_by: opt.order_by
+    }
   })
 }
 

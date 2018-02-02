@@ -51,11 +51,11 @@ export default new Router({
     // 重置密码页面
     { path: '/forgetPage', component: forgetPage },
     // 首页home
-    { path: '/home', component: home, meta: { keepAlive: true } },
+    { path: '/home', component: home },
     // 首页-选择地址
-    { path: '/selectLoction', component: selectLoction },
+    { path: '/selectLoction', component: selectLoction, meta: { keepAlive: false } },
     // 首页-选择地址-选择详细地址
-    { path: '/city/:cityid', component: city },
+    { path: '/city/:cityid', component: city, meta: { keepAlive: false } },
     // 首页-选择分类
     { path: '/foodCategory', component: foodCategory },
     // 首页-选择分类-详情
@@ -91,11 +91,11 @@ export default new Router({
     // 我的信息-信息详情-修改用户名
     { path: '/myInformation/editUsername', component: editUsername },
     // 我的信息-信息详情-修改地址
-    { path: '/myInformation/editAddress', component: editAddress },
+    { path: '/myInformation/editAddress', component: editAddress, meta: { keepAlive: true } },
     // 我的信息-信息详情-修改地址-新增地址
-    { path: '/myInformation/addNewAddress', component: addNewAddress },
+    { path: '/myInformation/addNewAddress', component: addNewAddress, meta: { keepAlive: true } },
     // 我的信息-信息详情-修改地址-新增地址-详细地址查询
-    { path: '/myInformation/addAddressDetail', component: addAddressDetail },
+    { path: '/myInformation/addAddressDetail', component: addAddressDetail, meta: { keepAlive: true } },
     // 我的信息-我的余额
     { path: '/balance', component: balance },
     // 我的信息-我的余额-余额说明
