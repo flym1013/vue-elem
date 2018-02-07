@@ -64,10 +64,10 @@ module.exports = {
 
   build: {
     // Template for index.html
-    index: path.resolve(__dirname, '../dist/index.html'),
+    index: path.resolve(__dirname, '../elm/index.html'),
 
     // Paths
-    assetsRoot: path.resolve(__dirname, '../dist'),
+    assetsRoot: path.resolve(__dirname, '../elm'),
     assetsSubDirectory: 'static',
     assetsPublicPath: './',  //编译时需加'.'
 
