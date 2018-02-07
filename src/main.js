@@ -22,6 +22,7 @@ let vm = new Vue({
   store,
   el: '#app',
   render: h => h(App),
+  // mode: hash,
   data () {
     return {
       showDeleteTip: false
@@ -75,7 +76,7 @@ function eventBackButton () {
 function exitApp () {
   navigator.app.exitApp()
 }
-// 弹出信息框提示
+// 弹出退出信息框提示
 function alertExit () {
   vm.$root.showDeleteTip = true
   clearTimeout(vm.timer)

@@ -93,12 +93,12 @@ export default {
   methods: {
     async searchTarget (historyValue) {
       // 测试app.vue上的弹框
-      this.$root.showDeleteTip = true
-      clearTimeout(this.timer)
-      this.timer = setTimeout(() => {
-        clearTimeout(this.timer)
-        this.$root.showDeleteTip = false
-      }, 1500)
+      // this.$root.showDeleteTip = true
+      // clearTimeout(this.timer)
+      // this.timer = setTimeout(() => {
+      //   clearTimeout(this.timer)
+      //   this.$root.showDeleteTip = false
+      // }, 1500)
       // this.$root.showDeleteTip = true
       // console.log(this.$root.showDeleteTip)
       // 判断是否点击历史记录进行搜索,，没有搜素词就直接返回
